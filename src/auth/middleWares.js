@@ -16,6 +16,7 @@ export const JWTAuthMiddleware = async (req, res, next) => {
 
             if(author) {
                 req.author = author
+                next()
             } else {
                 next(createError(404, "User not found!"))
             }

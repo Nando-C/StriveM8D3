@@ -25,27 +25,33 @@ authorsRouter.post('/register', async (req, res, next) => {
     }
 })
 
+// ===============  AUTHOR'S LOGIN =======================
 authorsRouter.post('/login' , async (req, res, next) => {
-    try {
-        const { email, password } = req.body
-
-        const author = await AuthorModel.checkCredentials(email, password)
-
-        if( author ) {
-            const { accessToken } = await JWTAuthenticate( author )
-
-            res.send({ accessToken })
-        } else {
-            next(createError(401, "Credentials not valid!"))
+    // if(!req.headers.authorization) {
+    //     next(createError(401, "Please provide credentials in the Authorization header!"))
+    // } else {
+        try {
+            const { email, password } = req.body
+    
+            const author = await AuthorModel.checkCredentials(email, password)
+    
+            if( author ) {
+                const accessToken = await JWTAuthenticate(author)
+                console.log(accessToken)
+    
+                res.send({ accessToken })
+            } else {
+                next(createError(401, "Credentials not valid!"))
+            }
+        } catch (error) {
+            console.log(error)
+            next(error)
         }
-    } catch (error) {
-        console.log(error)
-        next(error)
-    }
+    // }
 })
 
 // ===============  RETURNS AUTHORS LIST =======================
-authorsRouter.get('/', basicAuthMiddleware, async (req, res, next) => {
+authorsRouter.get('/', JWTAuthMiddleware, async (req, res, next) => {
     try {
         const authors = await AuthorModel.find()
         res.send(authors)
