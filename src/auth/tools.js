@@ -6,7 +6,7 @@ export const JWTAuthenticate = async user => {
     return accessToken
 }
 
-const generateJWT = payload => new Promise((resolve, reject) => jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m"}, (err, token) => {
+const generateJWT = payload => new Promise((resolve, reject) => jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "24h"}, (err, token) => {
     if (err) reject(err)
     resolve(token)
     })

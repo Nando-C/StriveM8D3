@@ -2,12 +2,12 @@ import express from 'express'
 import PostModel from './schema.js'
 import createError from 'http-errors'
 import q2m from 'query-to-mongo'
-import { basicAuthMiddleware } from '../../auth/middleWares.js'
+import { basicAuthMiddleware, JWTAuthMiddleware } from '../../auth/middleWares.js'
 
 const blogPostsRouter = express.Router()
 
 // ===============  CREATES NEW BLOG POST =======================
-blogPostsRouter.post('/', basicAuthMiddleware, async (req, res, next) => {
+blogPostsRouter.post('/', JWTAuthMiddleware, async (req, res, next) => {
     try {
         console.log(req.author)
         const newPost = new PostModel({...req.body, author: req.author._id})
@@ -26,7 +26,7 @@ blogPostsRouter.post('/', basicAuthMiddleware, async (req, res, next) => {
 })
 
 // ===============  RETURNS BLOG POST LIST =======================
-blogPostsRouter.get('/me/stories', basicAuthMiddleware, async (req, res, next) => {
+blogPostsRouter.get('/me/stories', JWTAuthMiddleware, async (req, res, next) => {
     try {
         const myPosts = await PostModel.find({author: req.author._id})
         res.send(myPosts)
@@ -67,7 +67,7 @@ blogPostsRouter.get('/:postId', async (req, res, next) => {
 })
 
 // ===============  UPDATES A BLOG POST =======================
-blogPostsRouter.put('/:postId', basicAuthMiddleware, async (req, res, next) => {
+blogPostsRouter.put('/:postId', JWTAuthMiddleware, async (req, res, next) => {
     try {
         const postId = req.params.postId
         const modifiedPost = await PostModel.findOneAndUpdate({_id: postId, author: {_id : req.author._id}}, req.body, {new: true, runValidators: true})
@@ -93,7 +93,7 @@ blogPostsRouter.put('/:postId', basicAuthMiddleware, async (req, res, next) => {
 })
 
 // ===============  DELETES A BLOG POST =======================
-blogPostsRouter.delete('/:postId', basicAuthMiddleware, async (req, res, next) => {
+blogPostsRouter.delete('/:postId', JWTAuthMiddleware, async (req, res, next) => {
     try {
         const postId = req.params.postId
         const deletedPost = await PostModel.findOneAndDelete({_id: postId, author: {_id : req.author._id}})
