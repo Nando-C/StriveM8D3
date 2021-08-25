@@ -1,7 +1,7 @@
 import express from 'express'
 import AuthorModel from './schema.js'
 import createError from 'http-errors'
-import { basicAuthMiddleware } from '../../auth/basic.js'
+import { basicAuthMiddleware } from '../../auth/middleWares.js'
 
 const authorsRouter = express.Router()
 

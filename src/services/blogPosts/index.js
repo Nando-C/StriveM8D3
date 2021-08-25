@@ -2,7 +2,7 @@ import express from 'express'
 import PostModel from './schema.js'
 import createError from 'http-errors'
 import q2m from 'query-to-mongo'
-import { basicAuthMiddleware } from '../../auth/basic.js'
+import { basicAuthMiddleware } from '../../auth/middleWares.js'
 
 const blogPostsRouter = express.Router()
 
