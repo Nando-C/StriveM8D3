@@ -1,7 +1,8 @@
 import express from 'express'
 import AuthorModel from './schema.js'
 import createError from 'http-errors'
-import { basicAuthMiddleware } from '../../auth/middleWares.js'
+import { basicAuthMiddleware, JWTAuthMiddleware } from '../../auth/middleWares.js'
+import { JWTAuthenticate } from '../../auth/tools.js'
 
 const authorsRouter = express.Router()
 
@@ -24,6 +25,25 @@ authorsRouter.post('/register', async (req, res, next) => {
     }
 })
 
+authorsRouter.post('/login' , async (req, res, next) => {
+    try {
+        const { email, password } = req.body
+
+        const author = await AuthorModel.checkCredentials(email, password)
+
+        if( author ) {
+            const { accessToken } = await JWTAuthenticate( author )
+
+            res.send({ accessToken })
+        } else {
+            next(createError(401, "Credentials not valid!"))
+        }
+    } catch (error) {
+        console.log(error)
+        next(error)
+    }
+})
+
 // ===============  RETURNS AUTHORS LIST =======================
 authorsRouter.get('/', basicAuthMiddleware, async (req, res, next) => {
     try {
@@ -35,7 +55,7 @@ authorsRouter.get('/', basicAuthMiddleware, async (req, res, next) => {
 })
 
 // ===============  RETURNS SINGLE AUTHOR =======================
-authorsRouter.get('/me', basicAuthMiddleware, async (req, res, next) => {
+authorsRouter.get('/me', JWTAuthMiddleware, async (req, res, next) => {
     try {
         res.send(req.author)
     } catch (error) {
@@ -43,7 +63,7 @@ authorsRouter.get('/me', basicAuthMiddleware, async (req, res, next) => {
     }
 })
 
-authorsRouter.get('/:authorId', basicAuthMiddleware, async (req, res, next) => {
+authorsRouter.get('/:authorId', JWTAuthMiddleware, async (req, res, next) => {
     try {
         const authorId = req.params.authorId
         const author = await AuthorModel.findById(authorId)
@@ -61,7 +81,7 @@ authorsRouter.get('/:authorId', basicAuthMiddleware, async (req, res, next) => {
 
 // ===============  UPDATES AN AUTHOR =======================
 
-authorsRouter.put('/me', basicAuthMiddleware, async (req, res, next) => {
+authorsRouter.put('/me', JWTAuthMiddleware, async (req, res, next) => {
     try {
         const updatedAuthor = await req.author.updateOne(req.body)
         res.send(updatedAuthor)
@@ -89,7 +109,7 @@ authorsRouter.put('/me', basicAuthMiddleware, async (req, res, next) => {
 // })
 
 // ===============  DELETES AN AUTHOR =======================
-authorsRouter.delete('/me', basicAuthMiddleware, async (req, res, next) => {
+authorsRouter.delete('/me', JWTAuthMiddleware, async (req, res, next) => {
     try {
         await req.author.deleteOne()
         res.status(204).send()
